@@ -1,16 +1,14 @@
 """This module compare a block with another block with all the other blocks to determine if it is contained within another"""
 
-from typing import List, Tuple, Dict
-
-from block_generator import block_generator
+from typing import List, Dict
 
 
-def is_inside(max_min1: Dict[str,float], max_min2: Tuple[float]) -> bool:
+def is_inside(max_min1: Dict[str,float], max_min2: Dict[str,float]) -> bool:
     """This function compare a block with another block to determine if it is contained within another.
     The order of the coordinates is [min_x, max_x, min_y, max_y].
     Args:
-        max_min1 (List[float]): A list of floats with the max and min coordinates of the first block.
-        max_min2 (List[float]): A list of floats with the max and min coordinates of the second block.
+        max_min1 (Dict[str,float]): A dict of floats with the max and min coordinates of the first block.
+        max_min2 (Dict[str,float]): A dict of floats with the max and min coordinates of the second block.
     Returns:
         bool: A boolean value that is True if the first block is contained within the second block, False otherwise.
     """
@@ -58,8 +56,9 @@ def is_piece(block: Dict, blocks: List[Dict]) -> bool:
 
 
 def main():
+    from block_generator import _block_generator
     proccessed_blocks = []
-    block_gen = block_generator("archivo.cam")
+    block_gen = _block_generator("archivo.cam")
     blocks = list(block_gen)
     for block in blocks:
         block["is_piece"] = is_piece(block, blocks)
