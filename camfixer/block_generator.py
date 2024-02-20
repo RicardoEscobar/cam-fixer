@@ -1,8 +1,6 @@
 """This module contains the function to get the text that defines a block from a cam file.
 """
 
-import re
-
 
 def block_generator(cam_file):
     """This generator function yields the text that defines blocks from a cam file.
