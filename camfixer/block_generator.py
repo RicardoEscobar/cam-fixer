@@ -114,9 +114,16 @@ def block_generator(cam_file):
         block["is_piece"] = is_piece(block, blocks)
 
         if block["is_piece"]:
-            # There is no arc if the block is a piece. So, move the arc to the main block.
+            # There is no arc if the block is a piece. So, move the arc to the
+            # main block.
             block["main"] = block["arc"] + block["main"]
             block["arc"] = []
+            # Recalculate the maximum and minimum coordinates.
+            block["max_min"] = get_max_min(block["main"])
+        else:
+            # The block is not a piece. So, replace the "G02" with "G03" in the
+            # main block.
+            block["main"] = [line.replace("G02", "G03") for line in block["main"]]
 
         # Reverse the main block list.
         block["main"].reverse()
