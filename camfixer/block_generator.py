@@ -2,9 +2,10 @@
 """
 
 from get_max_min import get_max_min
+from is_piece import is_piece
 
 
-def block_generator(cam_file):
+def _block_generator(cam_file):
     """This generator function yields the text that defines blocks from a cam file.
     The start of a block is defined by the line "M04" and the previous two lines, ignoring empty white lines.
     The arc of the block is defined by the next two lines after the start of the block.
@@ -76,8 +77,6 @@ def block_generator(cam_file):
         if line == "M03" and lines[i + 1] == "G40":
             # Gets the next two lines.
             block_end = lines[i : i + 2]
-            # Inverts the order of the block_main list.
-            block_main.reverse()
             # Gets the maximum and minimum coordinates of the block.
             max_min = get_max_min(block_main)
             # Joins the lines and yields the block.
@@ -99,6 +98,30 @@ def block_generator(cam_file):
             block_main_start = 0
         elif block_main_start > 0 and i >= block_main_start:
             block_main.append(line)
+
+
+def block_generator(cam_file):
+    """This function process each block separately to calculate maximum and minimum coordinates.
+    Args:
+        cam_file (str): The path to the cam file.
+    Returns:
+        List[Dict]: A list of dictionaries with the data of the blocks.
+    """
+    block_gen = _block_generator(cam_file)
+    blocks = list(block_gen)
+    for block in blocks:
+        # Sets the is_piece key of the block dictionary.
+        block["is_piece"] = is_piece(block, blocks)
+
+        if block["is_piece"]:
+            # There is no arc if the block is a piece. So, move the arc to the main block.
+            block["main"] = block["arc"] + block["main"]
+            block["arc"] = []
+
+        # Reverse the main block list.
+        block["main"].reverse()
+
+        yield block
 
 
 if __name__ == "__main__":
