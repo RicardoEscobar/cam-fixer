@@ -1,6 +1,8 @@
 """This module contains the function to get the text that defines a block from a cam file.
 """
 
+from get_max_min import get_max_min
+
 
 def block_generator(cam_file):
     """This generator function yields the text that defines blocks from a cam file.
@@ -42,13 +44,14 @@ def block_generator(cam_file):
         'main': ['G01X+269.8Y-29.0', 'G01X+263.6Y-35.2', 'G02X+251.3Y-47.6I+311.4J-107.7', 'G01X+226.4Y-107.7', 'G02X+226.4Y-595.6I+311.4J-595.6', 'G01X+391.3Y-624.5', 'G03X+417.2Y-553.0I+464.2J-570.0', 'G01X+428.8Y-534.7', 'G02X+490.7Y-472.8I+455.3J-437.5', 'G01X+502.9Y-422.0', 'G02X+392.2Y-81.4I+311.4J-107.7', 'G01X+371.5Y-47.6', 'G02X+346.7Y-22.8I+311.4J-58.2', 'G01X+276.0Y-22.8'],
         'end': ['M03', 'G40'],
         'text': 'G00X+264.2Y-23.4\nG41\nM04\nG01X+258.5Y-29.0\nG03X+269.8Y-29.0I+264.2J-23.4\nG01X+269.8Y-29.0\nG01X+263.6Y-35.2\nG02X+251.3Y-47.6I+311.4J-107.7\nG01X+226.4Y-107.7\nG02X+226.4Y-595.6I+311.4J-595.6\nG01X+391.3Y-624.5\nG03X+417.2Y-553.0I+464.2J-570.0\nG01X+428.8Y-534.7\nG02X+490.7Y-472.8I+455.3J-437.5\nG01X+502.9Y-422.0\nG02X+392.2Y-81.4I+311.4J-107.7\nG01X+371.5Y-47.6\nG02X+346.7Y-22.8I+311.4J-58.2\nG01X+276.0Y-22.8\nM03\nG40'
+        'max_min': {'max_x': 502.9, 'min_x': 226.4, 'max_y': -22.8, 'min_y': -624.5}
     }
 
     Args:
         cam_file (str): The path to the cam file.
 
     Yields:
-        str: The text that defines a block from a cam file.
+        dict: The dict that defines a block from a cam file.
     """
     block_start = []
     block_arc = []
@@ -75,6 +78,8 @@ def block_generator(cam_file):
             block_end = lines[i : i + 2]
             # Inverts the order of the block_main list.
             block_main.reverse()
+            # Gets the maximum and minimum coordinates of the block.
+            max_min = get_max_min(block_main)
             # Joins the lines and yields the block.
             text = "\n".join(block_start + block_arc + block_main + block_end)
             result = {
@@ -83,6 +88,7 @@ def block_generator(cam_file):
                 "main": block_main,
                 "end": block_end,
                 "text": text,
+                "max_min": max_min,
             }
             yield result
             # Resets the block variables.
