@@ -6,7 +6,7 @@ from get_coordinates import get_coordinates
 
 
 def get_max_min(main_block: List[str]) -> Dict[str, float]:
-    """Thios function process each block separately to calculate maximum and minimum coordinates.
+    """This function process each block separately to calculate maximum and minimum coordinates.
     args:
         main_block (List[str]): A list of strings with the main block of the cam file.
     Returns:
