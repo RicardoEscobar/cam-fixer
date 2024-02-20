@@ -2,7 +2,7 @@
 
 from typing import List, Dict
 
-from get_coordinates import get_coordinates
+from camfixer.get_coordinates import get_coordinates
 
 
 def get_max_min(main_block: List[str]) -> Dict[str, float]:
