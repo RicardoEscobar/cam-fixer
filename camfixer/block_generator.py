@@ -1,8 +1,8 @@
 """This module contains the function to get the text that defines a block from a cam file.
 """
 
-from get_max_min import get_max_min
-from is_piece import is_piece
+from camfixer.get_max_min import get_max_min
+from camfixer.is_piece import is_piece
 
 
 def _block_generator(cam_file):
