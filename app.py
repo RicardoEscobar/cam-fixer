@@ -15,7 +15,6 @@ def main():
 
     # Obtener el nombre del archivo .CAM proporcionado como argumento
     input_filepath = Path(sys.argv[1])
-    proccessed_blocks = []
     block_gen = block_generator(input_filepath)
     blocks = list(block_gen)
 
