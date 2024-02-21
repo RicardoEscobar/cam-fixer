@@ -128,6 +128,10 @@ def block_generator(cam_file):
         # Reverse the main block list.
         block["main"].reverse()
 
+        # Remake 'text' key.
+        # Joins the lines and yields the block.
+        block["text"] = "\n".join(block["start"] + block["arc"] + block["main"] + block["end"])
+
         yield block
 
 
