@@ -1,9 +1,10 @@
 """This module contains the function to get the text that defines a block from a cam file.
-"""
 
 from camfixer.get_max_min import get_max_min
-from camfixer.is_piece import is_piece
+"""
 
+from camfixer.is_piece_two import is_piece_two
+from camfixer.get_WKT import get_WKT
 
 def _block_generator(cam_file):
     """This generator function yields the text that defines blocks from a cam file.
@@ -54,6 +55,8 @@ def _block_generator(cam_file):
     Yields:
         dict: The dict that defines a block from a cam file.
     """
+    coordinates = []
+    block_initial = []
     block_start = []
     block_arc = []
     block_main = []
@@ -69,28 +72,37 @@ def _block_generator(cam_file):
     # Iterates over the lines.
     for i, line in enumerate(lines):
         if line == "M04":
+            # Gets the initial coordinate of the arc.
+            block_initial = [lines[i - 2]]
             # Gets the previous two lines.
-            block_start = lines[i - 2 : i + 1]
+            block_start = lines[i - 1 : i + 1]
             # Gets the next two lines.
             block_arc = lines[i + 1 : i + 3]
             block_main_start = i + 3
         if line == "M03" and lines[i + 1] == "G40":
             # Gets the next two lines.
             block_end = lines[i : i + 2]
-            # Gets the maximum and minimum coordinates of the block.
+            """ # Gets the maximum and minimum coordinates of the block.
             max_min = get_max_min(block_main)
+            """
             # Joins the lines and yields the block.
-            text = "\n".join(block_start + block_arc + block_main + block_end)
+            text = "\n".join(block_initial + block_start + block_arc + block_main + block_end)
+            coordinates = get_WKT(block_main)
             result = {
+                "initial":block_initial,
                 "start": block_start,
                 "arc": block_arc,
                 "main": block_main,
                 "end": block_end,
                 "text": text,
-                "max_min": max_min,
+                "polygon": coordinates,
             }
+            """
+                "max_min": max_min,
+            """            
             yield result
             # Resets the block variables.
+            block_initial = []
             block_start = []
             block_arc = []
             block_main = []
@@ -111,26 +123,28 @@ def block_generator(cam_file):
     blocks = list(block_gen)
     for block in blocks:
         # Sets the is_piece key of the block dictionary.
-        block["is_piece"] = is_piece(block, blocks)
+        block["is_piece"] = is_piece_two(block, blocks)
 
-        if block["is_piece"]:
+        if not block["is_piece"]:
             # There is no arc if the block is a piece. So, move the arc to the
             # main block.
             block["main"] = block["arc"] + block["main"]
             block["arc"] = []
+            """
             # Recalculate the maximum and minimum coordinates.
             block["max_min"] = get_max_min(block["main"])
+            """
         else:
             # The block is not a piece. So, replace the "G02" with "G03" in the
             # main block.
             block["main"] = [line.replace("G02", "G03") for line in block["main"]]
 
-        # Reverse the main block list.
-        block["main"].reverse()
+        # # Reverse the main block list.
+        # block["main"].reverse()
 
         # Remake 'text' key.
         # Joins the lines and yields the block.
-        block["text"] = "\n".join(block["start"] + block["arc"] + block["main"] + block["end"])
+        block["text"] = "\n".join(block["initial"] + block["start"] + block["arc"] + block["main"] + block["end"])
 
         yield block
 
