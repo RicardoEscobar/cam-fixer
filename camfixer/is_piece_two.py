@@ -1,18 +1,6 @@
 from typing import List, Dict
 from shapely.geometry import Polygon
 
-def is_inside_two(polygon1: Polygon, polygon2: Polygon) -> bool:
-    """This function compares if polygon1 is contained within polygon2.
-    
-    Args:
-        polygon1 (Polygon): The first polygon.
-        polygon2 (Polygon): The second polygon.
-        
-    Returns:
-        bool: A boolean value that is True if polygon1 is contained within polygon2, False otherwise.
-    """
-    return polygon1.contains(polygon2)
-
 
 def is_piece_two(block: Dict, blocks: List[Dict]) -> bool:
     """This function compares a block with all the other blocks to determine if it is contained within another.
@@ -24,20 +12,19 @@ def is_piece_two(block: Dict, blocks: List[Dict]) -> bool:
     Returns:
         bool: A boolean value that is True if the block is contained within another, False otherwise.
     """
-    result = True
+    result = None
     # Gets the polygon of the block.
-    polygon1 = block["polygon"]
+    polygon1 = Polygon(block["polygon"])
     # Iterates over the blocks.
     for block2 in blocks:
         if block2 == block:
             continue
         # Gets the polygon of the other block.
-        polygon2 = block2["polygon"]
+        polygon2 = Polygon(block2["polygon"])
         # Compares the polygons.
-        poly1 = Polygon(polygon1)
-        poly2 = Polygon(polygon2)
-        if poly1.contains(poly2):
-            result = False
+        if polygon2.contains(polygon1):
+            result = block2["main"]
+            print(result)
             break
 
     return result
