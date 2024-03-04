@@ -135,9 +135,10 @@ def block_generator(cam_file):
             block["max_min"] = get_max_min(block["main"])
             """
         else:
+            pass
             # The block is not a piece. So, replace the "G02" with "G03" in the
             # main block.
-            block["main"] = [line.replace("G02", "G03") for line in block["main"]]
+            # block["main"] = [line.replace("G02", "G03") for line in block["main"]]
 
         # # Reverse the main block list.
         # block["main"].reverse()
@@ -145,6 +146,8 @@ def block_generator(cam_file):
         # Remake 'text' key.
         # Joins the lines and yields the block.
         block["text"] = "\n".join(block["initial"] + block["start"] + block["arc"] + block["main"] + block["end"])
+
+        block["contained_in"] = is_piece_two(block, blocks)
 
         yield block
 
