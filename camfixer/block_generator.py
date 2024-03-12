@@ -1,26 +1,39 @@
 """This module contains the function to get the text that defines a block from a cam file."""
+
 import numpy as np
 import ast
 import cmath
 import math
 from shapely.geometry import Polygon
 from shapely.geometry import Point
+
 # from camfixer.get_direction import get_direction
 # from camfixer.es_pieza import es_pieza
 from camfixer.get_WKT import get_WKT
 from camfixer.get_max_min import get_max_min
 from math import atan2, degrees
+
 # from camfixer.is_arc_in import is_arc_in
 
 
 def get_orientacion(ncoordinates, centro_x, centro_y) -> str:
-    producto_cruzado = sum((x2 - centro_x) * (y1 - centro_y) - (x1 - centro_x) * (y2 - centro_y) for (x1, y1), (x2, y2) in zip(ncoordinates, ncoordinates[1:] + [ncoordinates[0]]))
+    producto_cruzado = sum(
+        (x2 - centro_x) * (y1 - centro_y) - (x1 - centro_x) * (y2 - centro_y)
+        for (x1, y1), (x2, y2) in zip(
+            ncoordinates, ncoordinates[1:] + [ncoordinates[0]]
+        )
+    )
     # print(f"El resultado del producto cruz total de todos los vectores es ",producto_cruzado)
 
     # Determina la orientación
-    orientacion = "antihoraria" if producto_cruzado < 0 else "horaria" if producto_cruzado > 0 else "indeterminada"
+    orientacion = (
+        "antihoraria"
+        if producto_cruzado < 0
+        else "horaria" if producto_cruzado > 0 else "indeterminada"
+    )
 
     return orientacion
+
 
 def _block_generator(cam_file):
     """This generator function yields the text that defines blocks from a cam file.
@@ -111,8 +124,8 @@ def _block_generator(cam_file):
             # Gets the next two lines.
             # Esto podria no ser asi, dependiendo de como se genere el archivo.cam en el programa PEAK. Podria tener una sola linea de arco en vez de dos.
             block_arc = lines[i + 1 : i + 3]
-            block_arc1 = [lines[i+1]]
-            block_arc2 = [lines[i+2]]
+            block_arc1 = [lines[i + 1]]
+            block_arc2 = [lines[i + 2]]
             block_main_start = i + 3
         if line == "M03" and lines[i + 1] == "G40":
             # Gets the next two lines.
@@ -120,7 +133,9 @@ def _block_generator(cam_file):
             # Suma +1 a la variable num_block
             num_block += 1
             # Joins the lines and yields the block.
-            text = "\n".join(block_initial + block_start + block_arc + block_main + block_end)
+            text = "\n".join(
+                block_initial + block_start + block_arc + block_main + block_end
+            )
 
             # Imprime en pantalla el numero de bloque
             # print(f"Bloque ", [num_block], " detectado correctamente.")
@@ -128,18 +143,18 @@ def _block_generator(cam_file):
             # print("________________________________________________________________________________________________________")
             # print("________________________________________________________________________________________________________")
             # print(f"La coordenada inicial es  {block_initial}\n El start{block_start}\n El arco es {block_arc}\nEl bloque main es {block_main}\n Y el final {block_end}")
-            #Imprime en pantalla el bloque encontrado.
+            # Imprime en pantalla el bloque encontrado.
             # print(text)
 
-            #Imprimo las coordenadas WKT
+            # Imprimo las coordenadas WKT
             coordinates = Polygon(get_WKT(block_main))
             # print(f"Imprimiendo las coordenadas WKT del bloque ",num_block, ":", coordinates)
 
-            #Guarda el punto donde pincha el arco.
+            # Guarda el punto donde pincha el arco.
             ini_coordinates = Point(get_WKT(block_initial))
 
-# ########### Inicio analisis de sentido de la pieza #############
-            #Guarda el recorrido de la pieza.
+            # ########### Inicio analisis de sentido de la pieza #############
+            # Guarda el recorrido de la pieza.
             ncoordinates = get_WKT(block_main)
             # print(f"Las coordenadas son: ",ncoordinates)
 
@@ -147,7 +162,7 @@ def _block_generator(cam_file):
             centro_x = sum(x for x, y in ncoordinates) / len(ncoordinates)
             centro_y = sum(y for x, y in ncoordinates) / len(ncoordinates)
 
-            #Lo agrego al diccionario
+            # Lo agrego al diccionario
             centro = (centro_x, centro_y)
 
             # print("Promedio de coordenadas X:", centro_x)
@@ -158,11 +173,10 @@ def _block_generator(cam_file):
 
             # Imprime la orientación
             # print("Orientacion:", orientacion
-########### Termina analisis de orientacion de la pieza ############
+            ########### Termina analisis de orientacion de la pieza ############
 
-
-########### Inicio analisis de posicion de arco #############
-            #Guardo TRUE or FALSE dependiendo si la coordenada inicial esta contenida dentro del recorrido main. Y arregla posibles falsos negativos para circunferencias.
+            ########### Inicio analisis de posicion de arco #############
+            # Guardo TRUE or FALSE dependiendo si la coordenada inicial esta contenida dentro del recorrido main. Y arregla posibles falsos negativos para circunferencias.
             # print(f"Las coordenadas son",coordinates, "y las coordenadas iniciales son",ini_coordinates)
             if coordinates.contains(ini_coordinates):
                 is_arc_in = True
@@ -171,7 +185,7 @@ def _block_generator(cam_file):
                 is_arc_in = False
                 # print(f"El arco esta por fuera del recorrido",is_arc_in)
 
-            if len(block_main)==4:
+            if len(block_main) == 4:
                 for i in block_main:
                     # print(i)
                     if line.startswith("G01"):
@@ -187,17 +201,17 @@ def _block_generator(cam_file):
                 # print(f"El arco del bloque",num_block," esta contenido dentro.")
                 # print(f"El valor del arco es TRUE=DENTRO, FALSE=FUERA",is_arc_in)
 
-########## True = DENTRO del recorrido, False = FUERA del recorrido ##############
-########## Termina analisis de posicion de arco ############
-                
-##################Analisis del arco para luego modificar###############
+            ########## True = DENTRO del recorrido, False = FUERA del recorrido ##############
+            ########## Termina analisis de posicion de arco ############
+
+            ##################Analisis del arco para luego modificar###############
             block_arc1 = Point(get_WKT(block_arc1))
             block_arc2 = Point(get_WKT(block_arc2))
             # print(f"imprimo arco1 y 2 {block_arc1} y {block_arc2}")
-#######################                       ############################   
-            #Esto guarda todas las variables del bloque en un diccionario.
+            #######################                       ############################
+            # Esto guarda todas las variables del bloque en un diccionario.
             result = {
-                "initial":block_initial,
+                "initial": block_initial,
                 "start": block_start,
                 "arc": block_arc,
                 "main": block_main,
@@ -213,15 +227,15 @@ def _block_generator(cam_file):
                 "contained_in": contained_in,
                 "arco1": block_arc1,
                 "arco2": block_arc2,
-                "nuevo_ini" : nuevo_ini,
-                "centro" : centro,
+                "nuevo_ini": nuevo_ini,
+                "centro": centro,
             }
-            
-            #Imprimo en pantalla todo el diccionario
+
+            # Imprimo en pantalla todo el diccionario
             # print(f"Imprimiendo la totalidad del diccionario del bloque", num_block)
             # print(result)
 
-            yield result 
+            yield result
 
             # Resets the block variables.
             is_arc_in = None
@@ -235,8 +249,9 @@ def _block_generator(cam_file):
             block_end = []
             block_main_start = 0
         elif block_main_start > 0 and i >= block_main_start:
-            block_main.append(line) 
+            block_main.append(line)
     print("Se generaron todos los bloques correctamente.")
+
 
 def block_generator(cam_file):
     """Esta funcion modifica los bloques dependiendo de diferentes aspectos.
@@ -245,120 +260,156 @@ def block_generator(cam_file):
     Returns:
         List[Dict]: A list of dictionaries with the data of the blocks.
     """
-######################Funcion para saber si contiene al otro bloque o no #########################
+
+    ######################Funcion para saber si contiene al otro bloque o no #########################
     def check_containment(poly1: Polygon, poly2: Polygon) -> bool:
         return poly1.contains(poly2)
-                                        # 'or poly1.contains(poly2.centroid)
-    
+        # 'or poly1.contains(poly2.centroid)
 
-#################### Funcion para corregir el arco ##############################   
-    def corregir_arco(ini, distancia, direccion):
+    #################### Funcion para corregir el arco ##############################
+    def corregir_arco(ini, distancia, direccion) -> Point:
         x, y = ini.x, ini.y
         x_nuevo = x + distancia * cmath.cos(direccion)
         y_nuevo = y + distancia * cmath.sin(direccion)
         nuevo_ini = Point(x_nuevo.real, y_nuevo.real)
-        result = f"G00X{nuevo_ini.x:+.1f}Y{nuevo_ini.y:+.1f}"
-        return result
-    
-##################Termina funcion########################################
+
+        return nuevo_ini
+
+    ##################Termina funcion########################################
     block_gen = _block_generator(cam_file)
     blocks = list(block_gen)
-########################### Analisis de que bloque contiene a que otro bloque ##########################   
+    ########################### Analisis de que bloque contiene a que otro bloque ##########################
     for idx, block in enumerate(blocks):
         is_piece = False
-        for other_block in blocks[:idx] + blocks[idx+1:]:
+        for other_block in blocks[:idx] + blocks[idx + 1 :]:
 
             # print(f"Este es el bloque 'other_block' = {other_block['num_block']}")
             # print(f" Y este es el 'bloque' {block['num_block']}")
 
             if check_containment(block["polygon"], other_block["polygon"]):
                 # print(f"El bloque {block['num_block']} contiene al bloque {other_block['num_block']}")
-                other_block['contained_in'] = block["num_block"]
-                other_block['is_piece'] = True
+                other_block["contained_in"] = block["num_block"]
+                other_block["is_piece"] = True
                 # print(f"Entonces el bloque {other_block['num_block']} esta contenido dentro de {block['num_block']}")
-##################################### Termina analisis ####################################################
-                
-#########Impresion en pantalla para verificacion visual############
+    ##################################### Termina analisis ####################################################
 
-############################# Modificacion del arco y de sangria segun el sentido de giro ###################################
+    #########Impresion en pantalla para verificacion visual############
+
+    ############################# Modificacion del arco y de sangria segun el sentido de giro ###################################
     for block in blocks:
-        #Transformo los datos para tenes los puntos donde pincha y hacia donde se mueve.
-        arco2 = block['arco2']
-        arco1 = block['arco1']
-        ini = block['ini_coordinates']
-        x1,y1  = ini.bounds[:2]
-        x2,y2  = arco1.bounds[:2]
-        x3,y3  = arco2.bounds[:2]
+        # Transformo los datos para tenes los puntos donde pincha y hacia donde se mueve.
+        arco2 = block["arco2"]
 
-        #Me pregunto si el recorrido es un recorrido interior.
-        if block['is_piece']:
+        arco1 = block["arco1"]
+        ini = block["ini_coordinates"]
+        x1, y1 = ini.bounds[:2]
+        x2, y2 = arco1.bounds[:2]
+        x3, y3 = arco2.bounds[:2]
+
+        # Me pregunto si el recorrido es un recorrido interior.
+        if block["is_piece"]:
             # print(f"El bloque {block['num_block']} es una pieza y esta contenido dentro del bloque {block['contained_in']}\n")
 
-            #Me pregnuto si el recorrido tiene el arco por fuera de su propio recorrido.
-            if block['is_arc_in']==False:
-                print(f"\n El bloque {block['num_block']} es un agujero y tiene el arco por fuera, se tiene que modificar. \n")
-                print(f"\n Las coordenadas del punto inicial son {x1, y1}, se mueve hacia {x2, y2} y luego hasta {x3, y3}. Siendo estas ultimas el primer punto del recorrido principal.")
+            # Me pregnuto si el recorrido tiene el arco por fuera de su propio recorrido.
+            if block["is_arc_in"] == False:
+                print(
+                    f"\n El bloque {block['num_block']} es un agujero y tiene el arco por fuera, se tiene que modificar. \n"
+                )
+                print(
+                    f"\n Las coordenadas del punto inicial son {x1, y1}, se mueve hacia {x2, y2} y luego hasta {x3, y3}. Siendo estas ultimas el primer punto del recorrido principal."
+                )
 
-                #Calculo la distancia y la direccion entre el punto inicial y el final.
-                direccion = math.atan2 (y3 - y1, x3 - x1)
+                # Calculo la distancia y la direccion entre el punto inicial y el final.
+                direccion = math.atan2(y3 - y1, x3 - x1)
                 distancia = arco2.distance(ini)
                 # print(f"\nLa distancia entre el arco2 y el ini es {distancia}")
                 # print(f"\n Y la direccion entre los dos puntos es {direccion} radianes respecto a al horizonatal. en sentido antihorario")
-                block['initial'] = [corregir_arco(arco2, distancia, direccion)]
-                print(f"\nLa nueva coordenada inicial del bloque {block['num_block']} es {block['nuevo_ini']}")
 
-            #Me pregnuto si se recorre en sentido horario.
-            if block['orientacion']=="horaria":
-                print(f"\nEl bloque {block['num_block']} se esta recorriendo en sentido horario. Y al ser un agujero debe tener sangria derecha. G42")
-                block['start'][0] = "G42"
+                block["nuevo_ini"] = corregir_arco(arco2, distancia, direccion)
 
-            #El recorrido va en contra de las agujas del reloj si llego a este punto.
-            else:
-                print(f"\nEl bloque {block['num_block']} se esta recorriendo en sentido antihorario. Y al ser un agujero debe tener sangria derecha. G41")
-                block['start'][0] = "G41"
+                print(
+                    f"\nLa nueva coordenada inicial del bloque {block['num_block']} es {block["nuevo_ini"]}"
+                )
 
-        #El recorrido es un recorrido exterior si llego a este punto.
+                RADIANES_90GRADOS = 1.5708
+                # Me pregnuto si se recorre en sentido horario.
+                if block["orientacion"] == "horaria":
+                    print(
+                        f"\nEl bloque {block['num_block']} se esta recorriendo en sentido horario. Y al ser un agujero debe tener sangria derecha. G42"
+                    )
+                    block["start"][0] = "G42"
+                    direccion = direccion + RADIANES_90GRADOS
+                    nuevo_arc1 = corregir_arco(block["nuevo_ini"], distancia, direccion)
+                    block["arc"][0] = f"G01X{nuevo_arc1.x:+.1f}Y{nuevo_arc1.y:+.1f}"
+                    block["arc"][1] = f"G02X{x3:+.1f}Y{y3:+.1f}I{block["nuevo_ini"].x:+.1f}J{block["nuevo_ini"].y:+.1f}"
+
+                # El recorrido va en contra de las agujas del reloj si llego a este punto.
+                else:
+                    print(
+                        f"\nEl bloque {block['num_block']} se esta recorriendo en sentido antihorario. Y al ser un agujero debe tener sangria derecha. G41"
+                    )
+                    block["start"][0] = "G41"
+                    direccion = direccion - RADIANES_90GRADOS
+                    nuevo_arc1 = corregir_arco(block["nuevo_ini"], distancia, direccion)
+                    block["arc"][0] = f"G01X{nuevo_arc1.x:+.1f}Y{nuevo_arc1.y:+.1f}"
+                    block["arc"][
+                        1
+                    ] = f"G03X{x3:+.1f}Y{y3:+.1f}I{block["nuevo_ini"].x:+.1f}J{block["nuevo_ini"].y:+.1f}"
+
+                block["initial"] = [f"G00X{block["nuevo_ini"].x:+.1f}Y{block["nuevo_ini"].y:+.1f}"]
+
+        # El recorrido es un recorrido exterior si llego a este punto.
         else:
-            if block['is_arc_in']:
-                print(f"El bloque {block['num_block']} es una pieza exterior y el arco esta por dentro, se tiene que modificar \n")
-                
-                #Calculo la distancia y la direccion entre el punto inicial y el final.
-                direccion = math.atan2 (y3 - y1, x3 - x1)
+            if block["is_arc_in"]:
+                print(
+                    f"El bloque {block['num_block']} es una pieza exterior y el arco esta por dentro, se tiene que modificar \n"
+                )
+
+                # Calculo la distancia y la direccion entre el punto inicial y el final.
+                direccion = math.atan2(y3 - y1, x3 - x1)
                 distancia = arco2.distance(ini)
 
-                block['nuevo_ini'] = corregir_arco(arco2, distancia, direccion)
-                print(f"\nLa nueva coordenada inicial del bloque {block['num_block']} es {block['nuevo_ini']}")
-#######################################################################################################################################
-        print(f"las coordenadas del centro de la figura del bloque {block['num_block']} es {block['centro']}")
+                block["nuevo_ini"] = corregir_arco(arco2, distancia, direccion)
+                print(
+                    f"\nLa nueva coordenada inicial del bloque {block['num_block']} es {block["nuevo_ini"]}"
+                )
+        #######################################################################################################################################
+        print(
+            f"las coordenadas del centro de la figura del bloque {block['num_block']} es {block['centro']}"
+        )
 
+        #############################   Modificacion del arco para agujeros interiores     ##################################################
+        # def resta(poly1: Point, poly2: Point) -> float:
+        #     return poly1.contains(poly2)
+        # for block in blocks:
+        #     if block['is_piece'] and block['is_arc_in']==False:
+        #         if resta(block["arco2"], block["ini_coordinates"]):
 
-    #############################   Modificacion del arco para agujeros interiores     ##################################################
-    # def resta(poly1: Point, poly2: Point) -> float:
-    #     return poly1.contains(poly2) 
-    # for block in blocks:
-    #     if block['is_piece'] and block['is_arc_in']==False:
-    #         if resta(block["arco2"], block["ini_coordinates"]):
+        # print(f"Las coordenadas del punto inicial son {block['ini_coordinates']}")
+        # print(f"Las lineas de codigo del arco son {block['arco1']} y {block['arco2']}")
 
-                # print(f"Las coordenadas del punto inicial son {block['ini_coordinates']}")
-                # print(f"Las lineas de codigo del arco son {block['arco1']} y {block['arco2']}")
+        # Imprimir o usar el resultado
+        # print(f"La resta es {}")
 
-            
-            # Imprimir o usar el resultado
-            # print(f"La resta es {}")
-
-            # print(f"El bloque {block['num_block']} ya se encuentra con el arco bien posicionado")
+        # print(f"El bloque {block['num_block']} ya se encuentra con el arco bien posicionado")
 
         # Remake 'text' key.
+
         # Joins the lines and yields the block.
-        block["text"] = "\n".join(block["initial"] + block["start"] + block["arc"] + block["main"] + block["end"])
-                
+        block["text"] = "\n".join(
+            block["initial"]
+            + block["start"]
+            + block["arc"]
+            + block["main"]
+            + block["end"]
+        )
+
         # Imprime en pantalla todos los bloques generados.
         # print("bloque generado: ", block)
         # block["contained_in"] = is_piece(block, blocks)
 
-                
         yield block
-        
+
 
 if __name__ == "__main__":
     cam_file = "archivo.cam"
