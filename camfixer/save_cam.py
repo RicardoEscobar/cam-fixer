@@ -12,7 +12,6 @@ def save_cam(blocks, cam_file):
         # Writes the start of file.
         file.write("BOF\n")
         file.write("G90\n")
-        file.write("G00X+226.2Y-8.2\n") # TODO: Ask about this line.
         for block in blocks:
             file.write(block["text"] + "\n")
         # Writes the end of file.

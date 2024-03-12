@@ -2,7 +2,7 @@
 
 from typing import List, Dict
 
-from camfixer.get_coordinates import get_coordinates
+from camfixer.get_WKT import get_WKT
 
 
 def get_max_min(main_block: List[str]) -> Dict[str, float]:
@@ -13,23 +13,25 @@ def get_max_min(main_block: List[str]) -> Dict[str, float]:
         Dict[str, float]: A dictionary with the maximum and minimum coordinates.
     """
     result = {
-        "max_x": float("-inf"),
         "min_x": float("inf"),
-        "max_y": float("-inf"),
+        "max_x": float("-inf"),
         "min_y": float("inf"),
+        "max_y": float("-inf"),
     }
     # Iterates over the lines of the main block.
     for line in main_block:
         # Gets the coordinates from the line.
-        coordinates = get_coordinates(line)
+        coordinates = get_WKT(line)
+        # print(f"Coordinates dentro de get max min son:",coordinates)
         if coordinates:
             x, y, *_ = coordinates
             # Updates the maximum and minimum coordinates.
-            result["max_x"] = max(result["max_x"], x)
             result["min_x"] = min(result["min_x"], x)
-            result["max_y"] = max(result["max_y"], y)
+            result["max_x"] = max(result["max_x"], x)
             result["min_y"] = min(result["min_y"], y)
+            result["max_y"] = max(result["max_y"], y)
 
+    # print(f"Las coordenadas maximas y minimas en los ejes X e Y en el siguiente orden -> MIN MAX X, MIN MAX Y. ", result )
     return result
 
 

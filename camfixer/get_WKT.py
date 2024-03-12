@@ -18,7 +18,7 @@ def get_WKT(lines):
         match = re.search(pattern, line)
         if match:
             x, y, _, i, _, j = match.groups()
-            polygon_coordinates.append([float(x), float(y)])
+            polygon_coordinates.append((float(x), float(y)))
 
     return polygon_coordinates
 
